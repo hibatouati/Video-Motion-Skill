@@ -9,7 +9,9 @@ bar-by-bar energy curve that follows the story, a clean ring-out.
 
     Hip-hop / trap (the default): 808s with glides, half-time clap on 3, hat
     rolls, dark FM bells, at 130 to 150 BPM; energy 0 is a filtered intro.
-    --style soft is the calm bed for explainers. Punchy electronic: --style punchy (harder kick, claps, 16th hats, sidechain pump),
+    --style lofi is the warm Girls Who Ai bed for soft films and lessons (80 to 92 BPM:
+    swung drums, electric piano 7th chords, round bass, a little vinyl crackle).
+    --style soft is the plainest calm bed. Punchy electronic: --style punchy (harder kick, claps, 16th hats, sidechain pump),
     --hits "3 5" (impact on those downbeats), --risers "5" (a riser filling
     the bar before bar 5), --gaps "5" (half a beat of silence before bar 5).
 
@@ -26,7 +28,8 @@ Sound effects (short, dry, quiet) and their measured peak times:
     uv run --with numpy python3 scripts/synth.py sfx --out assets/audio/sfx
 
     writes click.wav tick.wav pop.wav whoosh.wav ping.wav chime.wav thud.wav
-    and peaks.json ({name: seconds to the loudest sample}). Place each hit at
+    type.wav (one soft key, for a prompt typing) send.wav (a short rise, for the
+    send press) and peaks.json ({name: seconds to the loudest sample}). Place each hit at
     cue - peak so the transient lands on the frame (scripts/place-audio.mjs).
 
 Everything here is generated, so the license is yours (no samples used).
@@ -200,6 +203,76 @@ def trap_layers(args, buf, drums, energy, chords, beat, bar, rng, kicks):
                 add(drums, hat, start + k * beat / 2, 0.08, 0.25)
 
 
+def epiano(freq, seconds, decay=2.2):
+    """A soft electric piano: FM with a low index, a bell-ish attack that mellows fast."""
+    t = np.arange(int(seconds * SR)) / SR
+    mod = 1.3 * np.exp(-t * 7) * np.sin(2 * np.pi * freq * t)
+    y = np.sin(2 * np.pi * freq * t + mod) * np.exp(-t * decay)
+    y += 0.18 * np.sin(2 * np.pi * freq * 2 * t) * np.exp(-t * decay * 2.5)
+    y[: int(0.004 * SR)] *= np.linspace(0, 1, int(0.004 * SR))
+    return y.astype(np.float32)
+
+
+def soften(x, taps=9):
+    """A cheap low-pass (moving average), fine for whole-length beds."""
+    k = np.ones(taps, np.float32) / taps
+    return np.convolve(x, k, mode="same").astype(np.float32)
+
+
+def lofi_layers(args, buf, drums, energy, chords, beat, bar, rng, kicks):
+    """Lo-fi: swung eighths, a soft kick and rim, electric piano 7ths, round bass, vinyl."""
+    swing = beat * 0.11  # the "and" of every beat lands late: the lazy feel
+    eighth = lambda k: k * beat / 2 + (swing if k % 2 else 0)
+    root_pc = NOTE[args.key.upper()]
+    scale = SCALES[args.mode]
+    tk = np.arange(int(0.3 * SR)) / SR
+    kick = (np.sin(2 * np.pi * (42 * tk + 70 * (1 - np.exp(-tk * 30)) / 30)) * np.exp(-tk * 11)).astype(np.float32)
+    noise = rng.standard_normal(int(0.25 * SR)).astype(np.float32)
+    ts = np.arange(int(0.18 * SR)) / SR
+    rim = (soften(noise[: len(ts)], 5) * np.exp(-ts * 30) * 0.8 + np.sin(2 * np.pi * 330 * ts) * np.exp(-ts * 40) * 0.5).astype(np.float32)
+    hat = (np.diff(noise[: int(0.03 * SR)], prepend=0) * env(int(0.03 * SR), 0.0005, 0.028)).astype(np.float32)
+    degrees = {}
+    for token in args.progression.split():
+        degrees.setdefault(len(degrees), ROMAN[token.strip("°+").upper()] - 1)
+    for index in range(args.bars):
+        level = energy[index]
+        start = index * bar
+        chord = chords[index % len(chords)]
+        d = degrees[index % len(degrees)]
+        seventh = root_pc + scale[(d + 6) % 7] + 12 * ((d + 6) // 7)
+        voicing = [n + 60 - 12 * (n > 7) for n in chord + [seventh]]
+        # chord on 1 and on the swung "and" of 2, a little strum
+        for hit, gain in ((0, 0.075), (eighth(3), 0.05)):
+            for j, n in enumerate(sorted(voicing)):
+                note = epiano(hz(n), min(bar, 2.4))
+                if level == 0:
+                    note = soften(note, 21)
+                add(buf, note, start + hit + j * 0.012, gain, (-0.35, -0.1, 0.1, 0.35)[j % 4])
+        if level >= 1:
+            for k in range(args.beats * 2):
+                add(drums, hat, start + eighth(k), 0.05 if k % 2 else 0.08, 0.3)
+        if level >= 2:
+            for at in (0, eighth(5)):  # kick on 1 and the "and" of 3
+                add(drums, kick, start + at, 0.55)
+                kicks.append(start + at)
+            for k in (1, 3):
+                if k < args.beats:
+                    add(drums, rim, start + k * beat, 0.3, 0.1)
+        if level >= 3:
+            bass_root = chord[0] + 36 - 12 * (chord[0] > 7)
+            for at, length in ((0, beat * 1.5), (beat * 2, beat * 1.2), (eighth(7), beat * 0.4)):
+                bass = tone(hz(bass_root), length, (1, 0.3, 0.08)) * env(int(length * SR), 0.01, 0.12)
+                add(buf, bass, start + at, 0.3)
+    # vinyl: a quiet hiss and sparse crackle over everything
+    n = len(buf)
+    hiss = soften(rng.standard_normal(n).astype(np.float32), 31) * 0.02
+    crackle = np.zeros(n, np.float32)
+    idx = rng.integers(0, n, size=int(n / SR * 9))
+    crackle[idx] = rng.uniform(0.05, 0.2, size=len(idx)).astype(np.float32) * rng.choice([-1, 1], size=len(idx))
+    drums[:, 0] += hiss + crackle
+    drums[:, 1] += hiss + np.roll(crackle, 7)
+
+
 def music(args):
     rng = np.random.default_rng(args.seed)
     beat = 60.0 / args.bpm
@@ -229,6 +302,8 @@ def music(args):
 
     if args.style == "trap":
         trap_layers(args, buf, drums, energy, chords, beat, bar, rng, kicks)
+    elif args.style == "lofi":
+        lofi_layers(args, buf, drums, energy, chords, beat, bar, rng, kicks)
     else:
         for index in range(args.bars):
             level = energy[index]
@@ -353,6 +428,9 @@ def sfx(args):
     c = sum(np.sin(2 * np.pi * f * t(1.4)) * np.exp(-t(1.4) * d) for f, d in ((880, 3.5), (1108.7, 4), (1318.5, 4.5), (1760, 6)))
     save("chime", c * env(n(1.4), 0.004, 0.4), 0.4)
     save("thud", np.sin(2 * np.pi * (40 * t(0.4) + 70 * (1 - np.exp(-t(0.4) * 20)) / 20)) * np.exp(-t(0.4) * 8), 0.6)
+    key = np.diff(noise(0.04), prepend=0) * np.exp(-t(0.04) * 180) * 0.5 + np.sin(2 * np.pi * 520 * t(0.04)) * np.exp(-t(0.04) * 120)
+    save("type", key, 0.3)
+    save("send", np.sin(2 * np.pi * np.cumsum(500 + 900 * (t(0.22) / 0.22) ** 2) / SR) * np.sin(np.pi * np.clip(t(0.22) / 0.22, 0, 1)) ** 1.5, 0.35)
     with open(os.path.join(args.out, "peaks.json"), "w") as f:
         json.dump(out, f, indent=2)
     print(f"{len(out)} effects in {args.out}, peaks.json: {out}")
@@ -372,7 +450,7 @@ def main():
     m.add_argument("--energy", default="1223332211")
     m.add_argument("--tail", type=float, default=1.5)
     m.add_argument("--seed", type=int, default=7)
-    m.add_argument("--style", default="trap", choices=["soft", "punchy", "trap"], help="punchy: harder kick, claps, 16th hats, sidechain pump; trap: hip-hop, 808s with glides, half-time clap, hat rolls, dark bells (use 130 to 150 BPM)")
+    m.add_argument("--style", default="trap", choices=["soft", "lofi", "punchy", "trap"], help="punchy: harder kick, claps, 16th hats, sidechain pump; trap: hip-hop, 808s with glides, half-time clap, hat rolls, dark bells (use 130 to 150 BPM); lofi: swung drums, electric piano 7ths, vinyl (use 80 to 92 BPM)")
     m.add_argument("--hits", default="", help="bars (1-based) that open with an impact, e.g. '3 5'")
     m.add_argument("--risers", default="", help="bars that a riser leads INTO (it fills the bar before)")
     m.add_argument("--gaps", default="", help="bars preceded by a half-beat of silence")

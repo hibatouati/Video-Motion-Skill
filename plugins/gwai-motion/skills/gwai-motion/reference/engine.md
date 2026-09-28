@@ -7,13 +7,14 @@ Read `/hyperframes-core` (installed with `npx hyperframes skills update`) when y
 ## Workspace
 
 - **Where it lives.** `videos/<film>/` next to (or inside) the product repo, so it can read the product's tokens, fonts and SVGs. `videos/BRAND.md` is shared by every film.
-- **Set it up.** `node <skill>/scripts/setup.mjs videos/<film> --size 1080x1920 [--katex]`:
+- **Set it up.** `node <skill>/scripts/setup.mjs videos/<film> --style <showreel|soft|lesson> --size 1080x1920 [--katex] [--no-three]`:
   - `npx hyperframes init` (Node 22+ and FFmpeg are required; `npx hyperframes doctor` checks them)
-  - the kit in `kit/`, starters `index.html` and `cues.js`
+  - the kit in `kit/`, the starter `index.html` for the style (showreel: lit 3D; soft and lesson: DOM only) and `cues.js`
+  - the brand font stand-in in `assets/fonts/gwai-sans.woff2`, and `videos/BRAND.md` if there is none
   - GSAP (and KaTeX) vendored into `vendor/`: nothing loads from a CDN at render time
   - a `.gitignore` for `renders/`, `review/`, `out/`, `snapshots/` and licensed audio
-- **Fonts.** Copy the product's font files into `assets/fonts/` and declare an `@font-face` per family (lint requires it). Variable fonts: one face with `font-weight: 100 900`.
-- **Tokens.** Copy the product's tokens into `:root` as hex. Anything that animates is interpolated with `PF.mix` from hex, never from `color-mix()` or a CSS variable.
+- **Fonts.** The starters declare `"GWAI Sans"` from `assets/fonts/gwai-sans.woff2` (lint requires an `@font-face` per family). Use `G.FONT` everywhere.
+- **Colours.** `PF.gwai.C` only. Anything that animates is interpolated with `PF.mix` from hex, never from `color-mix()` or a CSS variable.
 - **Product components.** HyperFrames renders HTML, not React. Three ways to use real UI:
   1. Copy the rendered markup and its CSS (the product's built stylesheet, or Tailwind output) into the scene. Best for static components: exact look, no build step.
   2. Rebuild the component as a small HTML twin with the product's class names and tokens. Best when it animates (a spinner, a typing field, a chart).
@@ -55,6 +56,7 @@ Read `/hyperframes-core` (installed with `npx hyperframes skills update`) when y
 | `cursor.js` | `PF.cursorAt(t, keys)` glides that arrive exactly on the cue, with click squash; `PF.makeCursor`/`PF.placeCursor` the OS arrow; `PF.pathAt` free Hermite paths |
 | `fx.js` | The showreel toolkit ([showreel.md](showreel.md)): `PF.flood`, `PF.iris`, `PF.blinds`; `PF.slam`/`PF.slamStyle`, `PF.ring` shockwaves; `PF.shake`; `PF.grain`, `PF.vignette`; `PF.hud` viewfinder + `PF.timecode`; `PF.typewriter`; `PF.wordWall`; `PF.swarm` particles settling onto targets |
 | `three.js` | Rich 3D from the clock: `PF.three.stage` (renderer, env map, bloom, `newScene`/`use` per chapter), `PF.three.lights`, `PF.three.mat` (gloss, glass, satin, metal, glow), `PF.three.ramp`, `PF.three.orbit` and `PF.three.shots` (camera cuts with drift), `PF.three.field` (instanced columns), `PF.three.tube` (a curve that draws itself), `PF.three.canvasTexture`/`card` (paper, UI, exact swatches), `PF.three.photo` (a user's photo or screenshot as a 3D card), `PF.three.sticker`, `PF.three.samplePoints` + `PF.three.particles` (dust, particles converging into a logo). Vendored by `setup.mjs` by default; needs `waitFor: [PF.signal("three")]` ([showreel.md](showreel.md)) |
+| `gwai.js` | The Girls Who Ai pack ([gwai-brand.md](gwai-brand.md)): `PF.gwai.C` the five colours, `G.FONT`, `G.ease`; `G.pill`, `G.badge`, `G.rule`, `G.tracked`, `G.card`, `G.prompt` (a prompt that types, a send press, an answer arriving), `G.progress` (lesson dots), `G.float` (soft light), `G.lockup` (the ending). Each is built in `setup()` and returns `{ el, draw(t) }` (`G.float` returns a draw function) |
 | `debug.js` | `PF.debug({grid, safe})`: with `--debug` stills, prints `t`, bar.beat and every `[data-target]` box into the frame, and outlines the safe zone |
 
 Theme the words from the product's motion tokens: `{ font, color, accent, weight, enter: {length, rise, blur, ease}, exit: {length, blur, fall} }`. Defaults are a soft blur-rise; set `blur: 0` for a brand that never blurs.

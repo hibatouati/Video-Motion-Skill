@@ -1,17 +1,19 @@
-# The showreel cut: the default register
+# The showreel cut
 
-Every film this skill makes is a **showreel cut** unless the user explicitly asks for a calm explainer: fast, 3D, a new picture on almost every beat, giant type, colour flips, one showpiece per scene, cut to a beat. Do not ask "calm or fast?". Fast is the answer. The brand decides how it looks; the showreel decides how it moves.
+The fastest of the three GWAI styles ([styles.md](styles.md)), for events, launches and challenges: 3D, a new picture on almost every beat, giant capitals, colour flips between brown, soft blue and cream, one showpiece per scene, cut to a beat. The brand decides how it looks; the showreel decides how it moves. Soft and lesson films do not use this page except for the review notes.
 
-| | Showreel (default) | Explainer (only when asked for "calm", "tutorial", "walkthrough") |
+In the recipe below, `BRAND.bg` is the chapter's colour (brown, soft blue or cream), `BRAND.accent` is soft blue (the one glow), and every 3D material is cream, white or brown.
+
+| | Showreel | Calm (the soft and lesson styles, [styles.md](styles.md)) |
 |---|---|---|
 | Length | 12 to 25 s (social), up to 40 s (launch) | 30 to 90 s |
 | New picture | every 2 beats; a scene is 1 to 2 bars | every 2 to 4 bars |
-| Tempo | 135 to 150 BPM trap for a young audience (`synth.py --style trap`), 120 to 128 punchy otherwise | the song's |
+| Tempo | 135 to 150 BPM trap (`synth.py --style trap`), 120 to 128 punchy for LinkedIn | 80 to 92 BPM lo-fi (`--style lofi`) |
 | 3D | at least half the scenes are Three.js, lit and bloomed | optional |
 | Words | 1 to 3 giant words at a time, under 20 in the film | punchlines and captions |
 | Backgrounds | a full-bleed colour flip on every scene, from the brand palette | the product's one background |
 | Transitions | the transition is the show: floods, irises, blinds, whips, hard cuts on the downbeat | magic moves, fades |
-| Chrome | a viewfinder HUD: corner brackets, chapter label `01 — NAME`, timecode | none |
+| Chrome | a viewfinder HUD: corner brackets, chapter label `01 · NAME`, timecode | none |
 
 A showreel still looks like the product. The difference is energy, not taste: every effect is made from something the brand owns (its mark, its colours, its type, its subject). A generic lens flare reads as a template; the brand's dot flooding the frame reads as the brand.
 

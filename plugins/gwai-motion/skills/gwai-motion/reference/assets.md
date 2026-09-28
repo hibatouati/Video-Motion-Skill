@@ -26,6 +26,9 @@ videos/<film>/assets/
 | **Footage** | a chapter background under giant type, a cut on the beat | same as a recording; cut on the grid; read `/media-use` before changing how it looks |
 | **Song** | the grid and the energy | `beats.py`, then `audio-edit.py` on bars ([music.md](music.md)); ask for the licence |
 | **Voiceover** | the timing source | place words on its phrases; keep the music under it (duck 6 to 9 dB) |
+| **Event photos** (GWAI) | recap chapters: white-bordered cards arriving one at a time, slightly rotated, a slow push-in | a DOM `<img>` in a white card with the soft blue border and brown shadow (soft), or `PF.three.photo` (showreel); consent for every face |
+| **AI chat screenshot** (GWAI) | a lesson step: the card lands, then a zoom to the prompt or the answer | crop personal data first; zoom with a scale on `G.ease`; or retype the exact text into `G.prompt` so it reads crisp at phone size |
+| **A build a member made** (GWAI) | proof: a lit card in the showreel, a card in soft | name the builder only with her permission |
 
 ## Rules
 

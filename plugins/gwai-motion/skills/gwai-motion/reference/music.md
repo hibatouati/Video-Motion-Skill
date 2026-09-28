@@ -52,10 +52,20 @@ uv run --with numpy python3 <skill>/scripts/synth.py music --out assets/audio/be
   --energy 123333332210 --hits "3 5 7 9" --risers "5" --gaps "5" --tail 0
 ```
 
+For a soft or lesson film, the lo-fi bed (the GWAI default for calm films):
+
+```bash
+# 8 bars at 88 BPM is about 21.8 s; swung drums, electric piano 7ths, round bass, a little vinyl
+uv run --with numpy python3 <skill>/scripts/synth.py music --out assets/audio/bed.wav \
+  --style lofi --bpm 88 --bars 8 --key F --mode major --progression "IV iii ii I" \
+  --energy 12333321 --tail 0
+```
+
 - The grid is exact (nothing to detect): paste `bed.grid.json` into `cues.js`.
+- Lo-fi energy: `0` electric piano only (muffled), `1` + swung hats, `2` + soft kick and rim, `3` + round bass. Start on `1` under the hook, `3` under the steps, back to `2` or `1` under the lockup. Major keys with 7th chords read warm ("IV iii ii I", "I vi ii V"); 80 to 92 BPM.
 - `--energy` is one digit per bar, written from the beat sheet: `0` pad only, `1` + plucked arpeggio, `2` + soft kick and hats, `3` + bass and backbeat. Calm under the hook, full under the strongest moment, down for the headline, `0` for the ring-out.
-- Tempo: 135 to 150 trap (the default, young audiences), 120 to 128 punchy electronic (launches, B2B). 90 to 110 `--style soft` only for an explainer the user asked to be calm.
-- Hip-hop / trap for a young audience: `--style trap --bpm 140` (808s with glides that phone speakers can play, a half-time clap on beat 3, hat rolls into every other bar, dark FM bells; energy 1 is bells and hats only, a good first bar). Minor keys and progressions like `"i VI VII v"` sound right.
+- Tempo by style: showreel 135 to 150 trap (or 120 to 128 punchy electronic for LinkedIn); soft and lesson 80 to 92 `--style lofi`. `--style soft` is the plainest calm bed, for a film that needs almost no music.
+- Hip-hop / trap for showreels: `--style trap --bpm 140` (808s with glides that phone speakers can play, a half-time clap on beat 3, hat rolls into every other bar, dark FM bells; energy 1 is bells and hats only, a good first bar). Minor keys and progressions like `"i VI VII v"` sound right.
 - Punchy electronic: `--style punchy` (harder kick with a click, claps, sixteenth hats, the pads pumping under the kick), `--hits "2 5 8"` (a sub drop and crash on those downbeats), `--risers "5"` (a riser filling the bar before bar 5), `--gaps "5"` (half a beat of silence before it). Put the hits where the picture changes hardest. Major keys read confident; `--mode dorian` reads cool.
 - Generated from sine partials and noise, no samples: the output is yours to publish. It is a bed, not a hit; offer it when the user has no track, and say so.
 
@@ -65,8 +75,9 @@ uv run --with numpy python3 <skill>/scripts/synth.py music --out assets/audio/be
 uv run --with numpy python3 <skill>/scripts/synth.py sfx --out assets/audio/sfx
 ```
 
-- Writes `click tick pop whoosh ping chime thud` and `peaks.json` (seconds to each file's loudest sample). Or bring licensed effects and measure their peaks the same way.
+- Writes `click tick pop whoosh ping chime thud type send` and `peaks.json` (seconds to each file's loudest sample). Or bring licensed effects and measure their peaks the same way.
 - Short, dry, quiet (volume 0.2 to 0.45). The music leads. One sound per meaningful event: the landing, the click, the proof, the drop. Not every animation.
+- Lessons: `type` every 2 or 3 characters while the prompt types (volume 0.12 to 0.2, a few events, not one per letter), `send` on the send press, `pop` as each answer row lands, `chime` on the takeaway card.
 - Put them on the events in `cues.js` (`sfx: "ping", volume: 0.4`), then:
 
 ```bash

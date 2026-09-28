@@ -1,6 +1,6 @@
 # Ingredients: how to make each one good
 
-Showreel defaults come from [showreel.md](showreel.md); the notes below are the ingredients behind them (and the menu for an explainer). Each held up in real reviews; the brand's own rules win.
+Showreel defaults come from [showreel.md](showreel.md); the notes below are the ingredients behind them (and the menu for soft and lesson films). Each held up in real reviews; the brand's own rules win.
 
 ## Opening
 

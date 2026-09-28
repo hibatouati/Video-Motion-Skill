@@ -3,11 +3,14 @@
  * Set up (or refresh) a film project: a HyperFrames project with the kit and
  * vendored runtimes, so nothing loads from the network at render time.
  *
- *   node scripts/setup.mjs videos/<film> [--size 1080x1920] [--katex] [--no-three] [--force]
+ *   node scripts/setup.mjs videos/<film> [--style showreel|soft|lesson] [--size 1080x1920] [--katex] [--no-three] [--force]
  *
  * - runs `npx hyperframes init` if the folder has no hyperframes.json
- * - copies templates/kit/*.js into <film>/kit/ and templates/index.html,
- *   cues.js into <film>/ (only when missing, unless --force)
+ * - copies templates/kit/*.js into <film>/kit/ and the starter for the style
+ *   (showreel: templates/index.html; soft and lesson: templates/index-soft.html)
+ *   plus cues.js into <film>/ (only when missing, unless --force)
+ * - copies the Girls Who Ai brand profile to videos/BRAND.md when there is none
+ * - vendors the brand font stand-in (Inter, OFL) into <film>/assets/fonts/gwai-sans.woff2
  * - vendors gsap and Three.js with its add-ons (unless --no-three; KaTeX with --katex)
  *   from npm into <film>/vendor/
  * - rewrites any CDN <script src> for gsap to the vendored file
@@ -22,17 +25,23 @@ import { fileURLToPath } from "node:url";
 const GSAP = "3.14.2";
 const KATEX = "0.16.22";
 const THREE = "0.181.2";
+const INTER = "5.3.0"; // @fontsource-variable/inter: the Helvetica stand-in (OFL)
 const skill = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const args = process.argv.slice(2);
 const dir = args.find((a) => !a.startsWith("--"));
 const flag = (n) => args.includes(n);
 const value = (n, d) => (args.includes(n) ? args[args.indexOf(n) + 1] : d);
 if (!dir) {
-  console.error("usage: node scripts/setup.mjs <film-dir> [--size 1080x1920] [--katex] [--no-three] [--force]");
+  console.error("usage: node scripts/setup.mjs <film-dir> [--style showreel|soft|lesson] [--size 1080x1920] [--katex] [--no-three] [--force]");
   process.exit(1);
 }
 const film = resolve(dir);
 const [W, H] = value("--size", "1080x1920").split("x").map(Number);
+const style = value("--style", "showreel");
+if (!["showreel", "soft", "lesson"].includes(style)) {
+  console.error(`--style must be showreel, soft or lesson (got ${style})`);
+  process.exit(1);
+}
 const run = (cmd, list, cwd) => execFileSync(cmd, list, { cwd, stdio: ["ignore", "pipe", "inherit"], encoding: "utf8" });
 
 if (!existsSync(join(film, "hyperframes.json"))) {
@@ -50,14 +59,25 @@ mkdirSync(join(film, "kit"), { recursive: true });
 cpSync(join(skill, "templates", "kit"), join(film, "kit"), { recursive: true });
 
 // starter files
-const copyTemplate = (name, transform = (s) => s) => {
+const copyTemplate = (name, transform = (s) => s, from = name) => {
   const to = join(film, name);
   const fresh = !existsSync(to) || flag("--force");
   const initStub = existsSync(to) && readFileSync(to, "utf8").includes("// Example: tl.fromTo");
-  if (fresh || initStub) writeFileSync(to, transform(readFileSync(join(skill, "templates", name), "utf8")));
+  if (fresh || initStub) writeFileSync(to, transform(readFileSync(join(skill, "templates", from), "utf8")));
 };
-copyTemplate("index.html", (s) => s.replaceAll("__W__", String(W)).replaceAll("__H__", String(H)));
-copyTemplate("cues.js", (s) => s.replaceAll("__W__", String(W)).replaceAll("__H__", String(H)));
+// starter grid per style: showreel 12 bars at 140 BPM, soft and lesson 8 bars at 90 BPM
+const [BPM, BARS] = style === "showreel" ? [140, 12] : [90, 8];
+const DUR = String(Math.round(((BARS * 4 * 60) / BPM) * 1e4) / 1e4);
+const sized = (s) => s.replaceAll("__W__", String(W)).replaceAll("__H__", String(H)).replaceAll("__STYLE__", style).replaceAll("__BPM__", String(BPM)).replaceAll("__DUR__", DUR);
+copyTemplate("index.html", sized, style === "showreel" ? "index.html" : "index-soft.html");
+copyTemplate("cues.js", sized);
+
+// the brand profile, shared by every film in videos/
+const profile = join(dirname(film), "BRAND.md");
+if (!existsSync(profile)) {
+  cpSync(join(skill, "templates", "BRAND.md"), profile);
+  console.log(`wrote ${profile} (the Girls Who Ai profile)`);
+}
 
 // vendored runtimes from npm tarballs
 const vendor = join(film, "vendor");
@@ -95,6 +115,17 @@ if (!flag("--no-three") && (!existsSync(join(vendor, "three", "three.module.min.
   console.log(`vendored three ${THREE}`);
 }
 
+// the brand font stand-in, so every machine renders the same letters
+const font = join(film, "assets", "fonts", "gwai-sans.woff2");
+if (!existsSync(font) || flag("--force")) {
+  const p = unpack(`@fontsource-variable/inter@${INTER}`);
+  mkdirSync(dirname(font), { recursive: true });
+  cpSync(join(p.root, "files", "inter-latin-wght-normal.woff2"), font);
+  cpSync(join(p.root, "LICENSE"), join(dirname(font), "gwai-sans-LICENSE.txt"));
+  p.done();
+  console.log(`vendored Inter ${INTER} as assets/fonts/gwai-sans.woff2`);
+}
+
 // no CDN at render time
 const index = join(film, "index.html");
 if (existsSync(index)) {
@@ -106,4 +137,4 @@ const ignore = join(film, ".gitignore");
 const lines = ["renders/", "snapshots/", "review/", "out/", "node_modules/", "assets/audio/licensed/"];
 const have = existsSync(ignore) ? readFileSync(ignore, "utf8") : "";
 writeFileSync(ignore, have + lines.filter((l) => !have.includes(l)).map((l) => l + "\n").join(""));
-console.log(`ready: ${film}  (${W}x${H})`);
+console.log(`ready: ${film}  (${W}x${H}, ${style})`);

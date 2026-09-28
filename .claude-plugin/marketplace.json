@@ -1,0 +1,16 @@
+{
+  "name": "gwai-motion-skill",
+  "owner": {
+    "name": "Girls Who Ai"
+  },
+  "metadata": {
+    "description": "A Claude Code skill for on-brand Girls Who Ai motion videos in code, with HyperFrames and Three.js."
+  },
+  "plugins": [
+    {
+      "name": "gwai-motion",
+      "source": "./plugins/gwai-motion",
+      "description": "On-brand Girls Who Ai videos (events, cohort launches, AI lessons, challenges, recaps, spotlights) in soft blue, cream and brown, in three styles: a fast 3D showreel, a soft editorial film, and a step by step AI lesson."
+    }
+  ]
+}

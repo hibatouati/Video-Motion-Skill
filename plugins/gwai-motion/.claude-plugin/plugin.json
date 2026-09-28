@@ -1,0 +1,19 @@
+{
+  "name": "gwai-motion",
+  "version": "1.0.0",
+  "description": "On-brand Girls Who Ai videos (events, cohort launches, AI lessons, challenges, recaps, spotlights) in soft blue, cream and brown, in three styles: a fast 3D showreel, a soft editorial film, and a step by step AI lesson. Built with HyperFrames and Three.js; remembers every choice for the next film.",
+  "author": {
+    "name": "Girls Who Ai"
+  },
+  "license": "MIT",
+  "keywords": [
+    "girls-who-ai",
+    "hyperframes",
+    "video",
+    "motion-design",
+    "reels",
+    "ai-education",
+    "gsap",
+    "threejs"
+  ]
+}

@@ -1,6 +1,13 @@
 # Story: the shape, the beat plan and the checkpoint
 
-Build the story from the interview's answers. The default is the showreel shape in [showreel.md](showreel.md) (12 bars at 140 BPM, a chapter every 2 bars, each with a 3D showpiece). The longer shape below is for launch films over 30 s and for explainers the user asked for; ingredients.md says how to make each part good.
+Build the story from the interview's answers and the chapters of the video type ([video-types.md](video-types.md)). A showreel uses the shape in [showreel.md](showreel.md) (12 bars at 140 BPM, a chapter every 2 bars, each with a 3D showpiece); a lesson uses the lesson shape below; soft films follow their type's chapters at 88 BPM, one idea per 1 to 2 bars. ingredients.md says how to make each part good.
+
+## The lesson shape (soft and lesson styles)
+
+1. **The hook (1 to 2 bars).** Her problem in her words, one line on cream: "Still writing every email from scratch?"
+2. **Steps (2 to 4 bars each, 3 at most).** A badge with the step number, then the prompt box typing, the send, the answer arriving; or her screenshot as a card with a zoom to the one thing that matters.
+3. **The takeaway (1 to 2 bars).** One card, one line: "Minutes, not afternoons."
+4. **The lockup (2 bars).** "SAVE THIS" or "FOLLOW FOR MORE" as the pill.
 
 ## A longer shape (30 to 60 s)
 

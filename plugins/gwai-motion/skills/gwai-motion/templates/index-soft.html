@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=__W__, height=__H__" />
+    <title>Girls Who Ai lesson</title>
+    <!-- The soft and lesson styles: DOM only (no Three.js), so drafts and finals render fast. -->
+    <script src="vendor/gsap.min.js"></script>
+    <script src="kit/film.js"></script>
+    <script src="kit/motion.js"></script>
+    <script src="kit/words.js"></script>
+    <script src="kit/draw.js"></script>
+    <script src="kit/fx.js"></script>
+    <script src="kit/gwai.js"></script>
+    <script src="kit/debug.js"></script>
+    <script src="cues.js"></script>
+    <style>
+      /* The brand face is Helvetica; Inter (vendored by setup.mjs) stands in so renders match everywhere. */
+      @font-face { font-family: "GWAI Sans"; src: url("assets/fonts/gwai-sans.woff2") format("woff2"); font-weight: 100 900; font-display: block; }
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: __W__px; height: __H__px; overflow: hidden; background: #fffde7; }
+      #root { position: relative; width: 100%; height: 100%; overflow: hidden; background: #fffde7; color: #442a1f; font-family: "GWAI Sans", Helvetica, Arial, sans-serif; }
+      .full { position: absolute; left: 0; top: 0; width: __W__px; height: __H__px; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="__DUR__" data-width="__W__" data-height="__H__">
+      <!--
+        Layers, bottom to top: paper (cream) > soft light (drifting blue discs) >
+        the lesson (words, cards, the prompt box) > grain > the ending.
+        Keep root data-duration equal to CUES.duration. Only the five GWAI hexes.
+        The words below are placeholders: every line comes from the brief.
+      -->
+      <div id="light" class="full" data-layout-ignore></div>
+      <div id="lesson" class="full"></div>
+      <canvas id="grain" class="full" width="540" height="960" data-layout-ignore style="width:100%;height:100%"></canvas>
+      <div id="end" class="full" style="background:#442a1f;visibility:hidden"></div>
+      <!-- pf:audio -->
+      <!-- /pf:audio -->
+    </div>
+    <script>
+      const b = PF.grid(CUES.grid);
+      const $ = PF.$;
+      const W = CUES.width, H = CUES.height;
+      const G = PF.gwai;
+      const safeTop = CUES.safe ? CUES.safe.top : 120;
+      // Calm words: a small blur, a gentle rise, the house curve. Key words in brown on cream never need an accent colour; use weight instead.
+      const THEME = { font: G.FONT, color: G.C.brown, accent: G.C.brown, weight: 700, lineHeight: 1.05, enter: { length: 0.55, rise: 30, blur: 6, ease: G.ease }, exit: { length: 0.35, blur: 4, fall: 10 } };
+      let light, say, pill, steps, chat, card, rule, lockup;
+
+      function setup() {
+        light = G.float($("#light"), { n: 7, colors: [G.C.blue, G.C.white, G.C.blue] });
+
+        // Bar 1 to 2: the hook. A pill names the thing, two lines say the promise.
+        pill = G.pill($("#lesson"), "FREE WORKSHOP", { x: W / 2, y: safeTop + 260, size: 32, at: b(1, 1) + 0.15, out: b(3, 1) });
+        say = PF.punchlines($("#lesson"), [
+          { lines: [[{ text: "Your", at: b(1, 3) }, { text: "first", at: b(1, 3, 0.5) }], [{ text: "AI", at: b(1, 4) }, { text: "workflow.", at: b(1, 4, 0.5) }]], out: b(3, 1), y: H * 0.42, size: 132 },
+        ], THEME);
+        rule = G.rule($("#lesson"), { x: W / 2, y: H * 0.42 + 190, w: 110, at: b(2, 2), out: b(3, 1) });
+
+        // Bar 3 to 5: the lesson. Progress dots, then the prompt box types, the answer arrives.
+        steps = G.progress($("#lesson"), [
+          { at: b(3, 1), label: "STEP 1 OF 3" },
+          { at: b(4, 3), label: "STEP 2 OF 3" },
+          { at: b(5, 3), label: "STEP 3 OF 3" },
+        ], { y: safeTop + 60, out: b(7, 1) });
+        chat = G.prompt($("#lesson"), {
+          x: W / 2, y: H * 0.46, w: 900, tool: "Claude",
+          prompt: "Turn my meeting notes into a five slide outline",
+          reply: ["1. What we decided", "2. Who owns what", "3. The deadline"],
+          at: b(3, 1), typeFor: b.bar, replyAt: b(4, 3), out: b(6, 1),
+        });
+
+        // Bar 6: the takeaway on a card.
+        card = G.card($("#lesson"), { x: W / 2, y: H * 0.45, w: 880, n: 3, label: "THE TAKEAWAY", title: "Minutes, not afternoons", body: "Paste the notes. Ask for the outline. Edit, then send.", at: b(6, 1), out: b(7, 1) });
+
+        // Bar 7 to the end: brown floods down, the lockup lands in cream.
+        lockup = G.lockup($("#end"), { y: H * 0.42, color: G.C.cream, at: b(7, 1) + 0.3, cta: "SAVE THIS", handle: "@girlswhoai" });
+        PF.debug({ grid: b, safe: CUES.safe });
+      }
+
+      function draw(t) {
+        light(t);
+        pill.draw(t);
+        say(t);
+        rule.draw(t);
+        steps.draw(t);
+        chat.draw(t);
+        card.draw(t);
+
+        const end = b(7, 1);
+        PF.show($("#end"), t >= end);
+        PF.flood($("#end"), G.ease(PF.progress(t, end, 0.6)), "down");
+        lockup.draw(t);
+
+        PF.grain($("#grain"), t, { alpha: 0.035 });
+      }
+
+      PF.film({
+        duration: CUES.duration,
+        setup,
+        draw,
+        register: (tl) => {
+          window.__timelines["main"] = tl;
+        },
+      });
+    </script>
+  </body>
+</html>
