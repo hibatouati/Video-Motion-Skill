@@ -23,6 +23,16 @@
       .build img { display: block; width: 652px; height: auto; border-radius: 18px; }
       #badge { position: absolute; left: 90px; width: 900px; padding: 70px 40px; background: #ffffff; border: 2px solid #bfd9e3; border-radius: 36px; box-shadow: 0 34px 70px rgba(68,42,31,.14); display: grid; place-items: center; visibility: hidden; }
       #badge img { display: block; width: 800px; height: auto; }
+      /* Hiba: every line in capitals */
+      .pf-card, .pf-caption { text-transform: uppercase; letter-spacing: -0.01em; }
+      .dots { position: absolute; left: -120px; top: -120px; width: 1320px; height: 2160px; background-size: 44px 44px; }
+      .shape { position: absolute; left: 0; top: 0; }
+      #halo, #burst { position: absolute; border-radius: 50%; visibility: hidden; }
+      #burst { background: repeating-conic-gradient(#bfd9e3 0deg 5deg, rgba(191,217,227,0) 5deg 15deg); -webkit-mask-image: radial-gradient(circle, #000 25%, rgba(0,0,0,0) 70%); mask-image: radial-gradient(circle, #000 25%, rgba(0,0,0,0) 70%); }
+      #days { position: absolute; left: 240px; width: 600px; visibility: hidden; }
+      #days .track { height: 18px; border-radius: 18px; background: #bfd9e3; overflow: hidden; }
+      #days .fill { height: 100%; width: 100%; border-radius: 18px; background: #442a1f; transform-origin: 0 50%; }
+      #days .label { margin-top: 22px; text-align: center; font-weight: 700; font-size: 28px; letter-spacing: 0.24em; color: #442a1f; }
     </style>
   </head>
   <body>
@@ -34,7 +44,11 @@
         the challenge page and the day creatives (PROMPT.md).
       -->
       <div id="light" class="full" data-layout-ignore></div>
-      <div id="stage" class="full"></div>
+      <div id="bg" class="full" data-layout-ignore></div>
+      <div id="halo-layer" class="full" data-layout-ignore><svg id="halo" viewBox="0 0 1200 1200" width="1200" height="1200"><circle cx="600" cy="600" r="560" fill="none" stroke="#bfd9e3" stroke-width="5" stroke-dasharray="4 22" stroke-linecap="round"/><circle cx="600" cy="600" r="470" fill="none" stroke="#bfd9e3" stroke-width="3" stroke-dasharray="60 30"/></svg></div>
+      <div id="stage" class="full">
+        <div id="days"><div class="track"><div class="fill"></div></div><div class="label">30 / 100 DAYS</div></div>
+      </div>
       <div id="deck" class="full">
         <div class="build" data-day="1"><img src="assets/images/day1-tripodo.png" alt="Day 1: Tripodo, a travel planner" /></div>
         <div class="build" data-day="2"><img src="assets/images/day2-brb-lockedin.png" alt="Day 2: BRB.LOCKEDIN, a Pomodoro MSN" /></div>
@@ -43,12 +57,14 @@
         <div class="build" data-day="5"><img src="assets/images/day5-roomlist.png" alt="Day 5: Roomlist, a meeting planner" /></div>
       </div>
       <div id="captions" class="full"></div>
-      <div id="suspense" class="full" style="background:#442a1f;visibility:hidden"></div>
+      <div id="suspense" class="full" style="background:#442a1f;visibility:hidden"><div id="bg-suspense" class="full" data-layout-ignore></div></div>
       <div id="reveal" class="full" style="background:#fffde7;visibility:hidden">
         <div id="reveal-light" class="full" data-layout-ignore></div>
+        <div id="burst" data-layout-ignore style="left:-160px;top:-100px;width:1400px;height:1400px"></div>
+        <div id="bg-reveal" class="full" data-layout-ignore></div>
         <div id="badge"><img src="assets/images/lovable-badge.png" alt="Lovable Certified Expert, Website builder 2026" /></div>
       </div>
-      <div id="end" class="full" style="background:#442a1f;visibility:hidden"></div>
+      <div id="end" class="full" style="background:#442a1f;visibility:hidden"><div id="bg-end" class="full" data-layout-ignore></div></div>
       <canvas id="grain" class="full" width="540" height="960" data-layout-ignore style="width:100%;height:100%"></canvas>
       <!-- pf:audio -->
       <audio id="pf-music" data-timeline-role="music" src="assets/audio/bed.wav" data-start="0" data-duration="23.2258" data-track-index="20" data-volume="1"></audio>
@@ -86,21 +102,68 @@
       const cardAt = (i) => b(3, 1 + 2 * i); // one build every 2 beats from bar 3
       const DECK_OUT = b(6, 1);
       const CARD_Y = 870;
-      const HITS = BUILDS.map((_, i) => cardAt(i) + 0.3).concat([b(1, 3) + 0.12, b(8, 1) + 0.5]);
 
-      let light, revealLight, pill, hook, rule, pills, facts, withYou, guess, weAre, keep, lockup, cards, badgeRule;
+      /* The animated background: a drifting dot grid and floating palette shapes (rings,
+         dots, rounded squares, pills), rising slowly. One per scene colour. */
+      function makeBg(parent, { dot, dotAlpha, ring, fill, seed, n = 16 }) {
+        const grid = document.createElement("div");
+        grid.className = "dots";
+        grid.style.backgroundImage = `radial-gradient(circle, ${dot} 3px, rgba(0,0,0,0) 3.5px)`;
+        grid.style.opacity = dotAlpha;
+        parent.appendChild(grid);
+        const r = PF.random(seed);
+        const shapes = Array.from({ length: n }, (_, i) => {
+          const el = document.createElement("div");
+          el.className = "shape";
+          const kind = i % 4, size = 30 + r() * 90;
+          const css = [
+            `width:${size}px;height:${size}px;border-radius:50%;border:${3 + r() * 3}px solid ${ring}`,
+            `width:${size * 0.35}px;height:${size * 0.35}px;border-radius:50%;background:${fill}`,
+            `width:${size * 0.8}px;height:${size * 0.8}px;border-radius:${size * 0.22}px;border:4px solid ${ring}`,
+            `width:${size * 1.4}px;height:${size * 0.5}px;border-radius:${size}px;border:4px solid ${ring}`,
+          ][kind];
+          el.style.cssText += css + `;opacity:${0.55 + r() * 0.4}`;
+          parent.appendChild(el);
+          return { el, x: r() * W, y: r() * (H + 300), v: 40 + r() * 70, sway: 20 + r() * 40, f: 0.1 + r() * 0.2, spin: (r() - 0.5) * 60, ph: r() * 6.28 };
+        });
+        return (t) => {
+          PF.css(grid, { transform: `translate(${((t * 26) % 44).toFixed(2)}px, ${((-t * 18) % 44).toFixed(2)}px)` });
+          shapes.forEach((sh) => {
+            const y = ((sh.y - sh.v * t) % (H + 300) + (H + 300)) % (H + 300) - 150;
+            const x = sh.x + sh.sway * Math.sin(t * sh.f * 6.28 + sh.ph);
+            PF.css(sh.el, { transform: `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${(sh.spin * t).toFixed(1)}deg)` });
+          });
+        };
+      }
+      let bg, bgSuspense, bgReveal, bgEnd;
+
+      function drawDays(t) {
+        // the 30 / 100 bar fills to 30% under the headline
+        const at = b(1, 3, 0.5), out = b(2, 1) - 0.22;
+        const v = G.life(t, at, out, { enter: 0.35, leave: 0.2 });
+        PF.show($("#days"), t >= at && t < out);
+        PF.css($("#days"), { opacity: v.toFixed(3), transform: `translateY(${((1 - v) * 20).toFixed(1)}px)` });
+        const f = 0.3 * G.ease(PF.progress(t, at + 0.15, 0.8));
+        PF.css($("#days .fill"), { transform: `scaleX(${f.toFixed(4)})` });
+      }
+
+      let light, revealLight, pill, hook, pills, facts, withYou, guess, weAre, keep, lockup, cards, badgeRule;
 
       function setup() {
         light = G.float($("#light"), { n: 7, colors: [G.C.blue, G.C.white, G.C.blue] });
+        bg = makeBg($("#bg"), { dot: G.C.blue, dotAlpha: 0.7, ring: G.C.blue, fill: G.C.brown, seed: 5 });
+        bgSuspense = makeBg($("#bg-suspense"), { dot: G.C.cream, dotAlpha: 0.12, ring: "rgba(191,217,227,.45)", fill: "rgba(255,253,231,.35)", seed: 9, n: 12 });
+        bgReveal = makeBg($("#bg-reveal"), { dot: G.C.blue, dotAlpha: 0.6, ring: G.C.blue, fill: G.C.brown, seed: 13, n: 12 });
+        bgEnd = makeBg($("#bg-end"), { dot: G.C.cream, dotAlpha: 0.1, ring: "rgba(191,217,227,.4)", fill: "rgba(255,253,231,.3)", seed: 17, n: 12 });
         revealLight = G.float($("#reveal-light"), { n: 6, seed: 29, colors: [G.C.blue, G.C.white] });
 
         // Bars 1 and 2: the update, then what is coming.
         pill = G.pill($("#stage"), "100 DAY VIBE CODE CHALLENGE", { x: W / 2, y: 520, size: 30, at: b(1, 1, 0.25), out: b(3, 1) });
         hook = PF.punchlines($("#stage"), [
-          { lines: [[{ text: "Our", at: b(1, 2) }, { text: "first", at: b(1, 2, 0.5) }], [{ text: "30", at: b(1, 3) }, { text: "days.", at: b(1, 3, 0.5) }]], out: b(2, 1) - 0.22, y: 880, size: 150 },
-          { lines: [[{ text: "Here", at: b(2, 1) }, { text: "are", at: b(2, 1, 0.5) }, { text: "some", at: b(2, 2) }, { text: "of", at: b(2, 2, 0.5) }], [{ text: "our", at: b(2, 3) }, { text: "best", at: b(2, 3, 0.5) }, { text: "builds.", at: b(2, 4) }]], out: b(3, 1) - 0.22, y: 880, size: 104 },
+          { lines: [[{ text: "Our", at: b(1, 2) }, { text: "first", at: b(1, 2, 0.5) }], [{ text: "30", at: b(1, 3) }, { text: "days.", at: b(1, 3, 0.5) }]], out: b(2, 1) - 0.22, y: 860, size: 150 },
+          { lines: [[{ text: "Here", at: b(2, 1) }, { text: "are", at: b(2, 1, 0.5) }, { text: "some", at: b(2, 2) }, { text: "of", at: b(2, 2, 0.5) }], [{ text: "our", at: b(2, 3) }, { text: "best", at: b(2, 3, 0.5) }, { text: "builds.", at: b(2, 4) }]], out: b(3, 1) - 0.22, y: 860, size: 84 },
         ], HYPE);
-        rule = G.rule($("#stage"), { x: W / 2, y: 1080, w: 120, at: b(1, 4), out: b(3, 1) });
+        PF.css($("#days"), { top: "1060px" });
 
         // Bars 3 to 5: the builds slam onto a pile.
         cards = PF.$$("#deck .build").map((el, i) => {
@@ -113,17 +176,17 @@
 
         // Bar 6: to the women on the hub.
         withYou = PF.punchlines($("#stage"), [
-          { lines: [[{ text: "Building", at: b(6, 1) }, { text: "with", at: b(6, 1, 0.5) }, { text: "you", at: b(6, 2) }], [{ text: "on", at: b(6, 3) }, { text: "Lovable.", at: b(6, 3, 0.5) }]], out: b(7, 1), y: 880, size: 108 },
+          { lines: [[{ text: "Building", at: b(6, 1) }, { text: "with", at: b(6, 1, 0.5) }, { text: "you", at: b(6, 2) }], [{ text: "on", at: b(6, 3) }, { text: "Lovable.", at: b(6, 3, 0.5) }]], out: b(7, 1), y: 880, size: 84 },
         ], HYPE);
 
         // Bar 7: suspense on brown, over the riser.
         guess = PF.punchlines($("#suspense"), [
-          { lines: [[{ text: "Guess", at: b(7, 2) }, { text: "what...", at: b(7, 3) }]], out: b(8, 1) + 5, y: 900, size: 150 },
+          { lines: [[{ text: "Guess", at: b(7, 2) }], [{ text: "what...", at: b(7, 3) }]], out: b(8, 1) + 5, y: 900, size: 160 },
         ], ON_BROWN);
 
         // Bars 8 and 9: the drop and the badge.
         weAre = PF.punchlines($("#reveal"), [
-          { lines: [[{ text: "We", at: b(8, 1) + 0.05 }, { text: "are", at: b(8, 1, 0.3) }, { text: "now", at: b(8, 1, 0.6) }]], out: b(9, 3) - 0.2, y: 600, size: 124 },
+          { lines: [[{ text: "We", at: b(8, 1) + 0.05 }, { text: "are", at: b(8, 1, 0.3) }, { text: "now", at: b(8, 1, 0.6) }]], out: b(9, 3) - 0.2, y: 560, size: 120 },
         ], HYPE);
         const badge = $("#badge");
         badge.querySelector("img").style.height = `${Math.round((800 * PF.img.badge.naturalHeight) / PF.img.badge.naturalWidth)}px`;
@@ -132,9 +195,12 @@
 
         // Bar 9.3 to the end: the invitation, then the lockup (held 2 bars and more).
         keep = PF.punchlines($("#end"), [
-          { lines: [[{ text: "Keep", at: b(9, 3) + 0.2 }, { text: "building", at: b(9, 3, 0.5) + 0.2 }], [{ text: "with", at: b(9, 4) + 0.1 }, { text: "us.", at: b(9, 4, 0.5) + 0.1 }]], out: b(10, 3) - 0.25, y: 860, size: 132 },
+          { lines: [[{ text: "Keep", at: b(9, 3) + 0.2 }, { text: "building", at: b(9, 3, 0.5) + 0.2 }], [{ text: "with", at: b(9, 4) + 0.1 }, { text: "us.", at: b(9, 4, 0.5) + 0.1 }]], out: b(10, 3) - 0.25, y: 860, size: 104 },
         ], ON_BROWN);
         lockup = G.lockup($("#end"), { y: H * 0.42, color: G.C.cream, at: b(10, 3) + 0.1, cta: "JOIN THE GWAI HUB", handle: "girlswhoai.club" });
+
+        // pills get a cream backing, so the floating shapes pass behind their letters
+        [pill].concat(pills).forEach((pl) => PF.css(pl.el.children[1], { background: G.C.cream, borderRadius: "999px" }));
 
         PF.debug({ grid: b, safe: CUES.safe });
       }
@@ -148,28 +214,27 @@
           const live = t >= c.at;
           PF.show(c.el, live);
           if (!live) return;
-          // a fast drop from above, landing a touch big, then settling to size
-          const u = G.ease(PF.progress(t, c.at, 0.38));
-          const land = PF.progress(t, c.at + 0.3, 0.25);
-          const pop = land > 0 && land < 1 ? 0.05 * Math.sin(Math.PI * land) : 0;
+          // a soft rise from just below, fading in and turning gently into place
+          const u = G.ease(PF.progress(t, c.at, 0.6));
           const settle = Math.min(n - 1 - i, 3) * 0.025;
           const x = W / 2 - 340 + c.dx;
-          const y = CARD_Y - c.h / 2 - (1 - u) * 1500;
-          const rot = c.rot - (1 - u) * 14;
-          PF.css(c.el, { transform: `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${rot.toFixed(2)}deg) scale(${(1 + pop - settle).toFixed(4)})` });
+          const y = CARD_Y - c.h / 2 + (1 - u) * 240;
+          const rot = c.rot + (1 - u) * 6;
+          PF.css(c.el, { opacity: Math.min(1, u * 1.6).toFixed(3), transform: `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) rotate(${rot.toFixed(2)}deg) scale(${(0.92 + 0.08 * u - settle).toFixed(4)})` });
         });
       }
 
       function draw(t) {
-        // a short kick of shake on every landing (the soft light and words move with it)
-        const k = PF.shake(t, HITS, { amp: 9, decay: 0.28, rot: 0.3 });
-        PF.css($("#stage"), { transform: `translate(${k.x.toFixed(2)}px, ${k.y.toFixed(2)}px)` });
-        PF.css($("#deck"), { transform: `translate(${k.x.toFixed(2)}px, ${k.y.toFixed(2)}px) rotate(${k.r.toFixed(3)}deg)` });
-
-        light(t * 1.6);
+        light(t * 2.4);
+        bg(t);
+        // the dashed halo turns slowly behind the pile of builds
+        const halo = $("#halo");
+        const hv = G.life(t, cardAt(0) - 0.2, DECK_OUT, { enter: 0.6, leave: 0.3 });
+        PF.show(halo, t >= cardAt(0) - 0.2 && t < DECK_OUT);
+        PF.css(halo, { left: `${W / 2 - 600}px`, top: `${CARD_Y - 600}px`, opacity: hv.toFixed(3), transform: `rotate(${(t * 14).toFixed(2)}deg) scale(${(0.85 + 0.15 * hv).toFixed(4)})` });
         pill.draw(t);
         hook(t);
-        rule.draw(t);
+        drawDays(t);
 
         drawDeck(t);
         pills.forEach((p) => p.draw(t));
@@ -179,24 +244,31 @@
         const s0 = b(7, 1);
         PF.show($("#suspense"), t >= s0 && t < b(8, 1) + 0.5);
         PF.flood($("#suspense"), G.ease(PF.progress(t, s0, 0.4)), "down");
+        bgSuspense(t);
         guess(t);
 
         const r0 = b(8, 1);
         PF.show($("#reveal"), t >= r0 && t < b(9, 3) + 0.4);
         PF.flood($("#reveal"), G.ease(PF.progress(t, r0, 0.35)), "up");
-        revealLight(t * 1.6);
+        revealLight(t * 2.4);
+        bgReveal(t);
+        const burst = $("#burst");
+        const bv = G.ease(PF.progress(t, r0 + 0.3, 0.8));
+        PF.show(burst, t >= r0);
+        PF.css(burst, { top: `${1000 - 700}px`, opacity: (0.75 * bv).toFixed(3), transform: `rotate(${(t * 10).toFixed(2)}deg) scale(${(0.6 + 0.4 * bv).toFixed(4)})` });
         weAre(t);
         const badge = $("#badge");
         const bu = G.ease(PF.progress(t, r0 + 0.3, 0.45));
         const land = PF.progress(t, r0 + 0.6, 0.3);
         const pop = land > 0 && land < 1 ? 0.06 * Math.sin(Math.PI * land) : 0;
         PF.show(badge, t >= r0 + 0.3);
-        PF.css(badge, { opacity: bu.toFixed(3), transform: `translate(${k.x.toFixed(2)}px, ${((1 - bu) * 90 + k.y).toFixed(1)}px) scale(${(0.8 + 0.2 * bu + pop).toFixed(4)})` });
+        PF.css(badge, { opacity: bu.toFixed(3), transform: `translateY(${((1 - bu) * 90).toFixed(1)}px) scale(${(0.8 + 0.2 * bu + pop).toFixed(4)})` });
         badgeRule.draw(t);
 
         const e0 = b(9, 3);
         PF.show($("#end"), t >= e0);
         PF.flood($("#end"), G.ease(PF.progress(t, e0, 0.4)), "down");
+        bgEnd(t);
         keep(t);
         lockup.draw(t);
 

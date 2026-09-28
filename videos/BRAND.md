@@ -9,7 +9,7 @@ Sources: the GWAI newsletter and email copy skills (palette, type, voice), `refe
 - Style per type: showreel for events, launches and challenges; soft for recaps, spotlights, quotes and "send this to her"; lesson for tips and tutorials (`reference/styles.md`).
 - Music: generated trap bed for showreels (`synth.py --style trap`, 140 BPM), generated lo-fi bed for soft and lesson (`--style lofi`, 88 BPM, F major, "IV iii ii I").
 - Ending: the lockup (Girls Who Ai, the rule, BUILD. CREATE. CONNECT.) + a CTA pill only when there is one ("APPLY NOW", "LINK IN BIO", "SAVE THIS") + girlswhoai.club (Hiba, 2026-09-28).
-- Notes from past films that apply to all: recaps and updates should feel hyped, not calm: faster cuts and motivating, upbeat music (punchy 120 to 128 BPM, major key) over lo-fi (Hiba, 2026-09-28).
+- Notes from past films that apply to all: recaps and updates should feel hyped, not calm: faster cuts and motivating, upbeat music (punchy 120 to 128 BPM, major key) over lo-fi (Hiba, 2026-09-28). All on-screen lines in CAPITALS. No shake or vibration on cards: soft rises only. Backgrounds should move: drifting dot grid, floating palette shapes (rings, dots, rounded squares, pills), halos and bursts behind the hero (Hiba, 2026-09-28).
 
 ## Chosen by Claude (Hiba can overrule)
 - Font stand-in: Inter (OFL) as "GWAI Sans" in place of Helvetica, so renders match on every machine. <date>
@@ -21,7 +21,7 @@ Sources: the GWAI newsletter and email copy skills (palette, type, voice), `refe
 ## Films
 | Film | Type | Style | Date | Hiba's reaction, what changed |
 |---|---|---|---|---|
-| 100-days-recap (Our first 30 days) | Event recap | Soft, hyped | 2026-09-28 | v1 lo-fi 33 s: loved it; asked for more motivating music, faster, more hype, copy "our first 30 days update, some of our best builds". v2: punchy 124 BPM, 23 s |
+| 100-days-recap (Our first 30 days) | Event recap | Soft, hyped | 2026-09-28 | v1 lo-fi 33 s: loved it; asked for more motivating music, faster, more hype, copy "our first 30 days update, some of our best builds". v2: punchy 124 BPM, 23 s. v3: no card shake (soft rises), all caps, animated background (dot grid, shapes, halo, badge burst, 30/100 bar) |
 
 ## Assets on file (reusable across films)
 | Asset | Path | Notes (size, rights, consent) |
