@@ -1,7 +1,8 @@
-# 100 days of vibe coding: recap
+# Our first 30 days: 100 day challenge update
 
-Type: event recap (reference/video-types.md). Style: soft. 1080x1920, 12 bars at 88 BPM, 32.7 s.
-Music: generated lo-fi bed (synth.py --style lofi, F major, "IV iii ii I", energy 123333203221, hit and breath on bar 9).
+Type: event recap (reference/video-types.md). Style: soft, hyped. 1080x1920, 12 bars at 124 BPM, 23.2 s.
+Music: generated punchy bed (synth.py --style punchy, D major, "I V vi IV", energy 233333133321, hits on bars 3 and 8, riser into 8, breath before 8).
+v2 notes from Hiba: more motivating music, faster, more hyped; copy is "our first 30 days" and "some of our best builds" (not all of them).
 
 ## Facts, word for word
 - From the Build With Us page: "100 days of vibe coding.", "Join the 100 Day Vibe Code Challenge by Girls Who AI".
@@ -11,9 +12,9 @@ Music: generated lo-fi bed (synth.py --style lofi, F major, "IV iii ii I", energ
 - Builders are not named (Hiba's call). No faces in the creatives.
 
 ## Story
-1. Bars 1 to 2: pill 100 DAY VIBE CODE CHALLENGE, "100 days of vibe coding.", the rule.
-2. Bars 3 to 6: the five creatives land as a pile, one every 3 beats; name pill above, facts below.
-3. Bar 7: "Building with you on Lovable."
-4. Bar 8: brown floods down, "Guess what..."
-5. Bars 9 to 10: a breath, cream floods up, "We are now" and the badge.
-6. Bars 10.3 to 12: brown, "Keep building with us.", the lockup with JOIN THE GWAI HUB and girlswhoai.club.
+1. Bars 1 to 2: pill 100 DAY VIBE CODE CHALLENGE, "Our first 30 days.", then "Here are some of our best builds."
+2. Bars 3 to 5: the five creatives drop onto a pile, one every 2 beats, with a small shake; name pill above, facts below.
+3. Bar 6: "Building with you on Lovable."
+4. Bar 7: brown floods down, "Guess what...", over the riser.
+5. Bars 8 to 9: a breath, the drop, cream floods up, "We are now" and the badge.
+6. Bars 9.3 to 12: brown, "Keep building with us.", the lockup with JOIN THE GWAI HUB and girlswhoai.club.
